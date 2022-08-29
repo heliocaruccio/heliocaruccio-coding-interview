@@ -24,9 +24,20 @@ RSpec.describe "Users", type: :request do
 
       it 'returns only the users for the specified company' do
         get company_users_path(company_1)
-        
+
         expect(result.size).to eq(company_1.users.size)
         expect(result.map { |element| element['id'] } ).to eq(company_1.users.ids)
+      end
+    end
+
+    context 'when fetching users by like username' do
+      include_context 'with multiple companies'
+      it 'returns only the users for the specified like' do
+        username_like = Company.first.users.first.username[0..5]
+        #users_like_count = Company.first.users.where("users.username LIKE '%#{username_like}%'").map{|d|}
+        users_like_usernames = Company.first.users.where("users.username LIKE '%#{username_like}%'").map{|d| d.username}
+        get company_users_path(company_1, :params => { :username => username_like})
+        expect(result.map{|d| d['username'] }).to eq(users_like_usernames)
       end
     end
 
